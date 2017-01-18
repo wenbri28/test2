@@ -1,0 +1,59 @@
+#!/bin/bash
+#To check memmory usage
+
+DATE=`date +%Y%m%d" "%H:%M`
+
+while getopts "c:w:e:" arg; do
+		case $arg in
+				c)
+				Critical=$OPTARG
+				;;
+				w)
+				Warning=$OPTARG
+				;;
+				e)
+				Email=$OPTARG
+				;;
+				*)
+				echo "Usage: ./memory_check -c <CRITICAL Threshold> -w <WARNING Threshold> -e <EMAIL>"
+				exit 2
+				;;
+		esac
+done
+
+if [ $# -eq 0 ];
+then
+		echo "Usage: ./memory_check -c <CRITICAL Threshold> -w <WARNING Threshold> -e <EMAIL>"
+		exit 2
+fi
+
+USED_MEM=$(free | grep Mem | awk '{printf("%.0f"), $3/$2 * 100.0}')
+FREE_MEM=$(( 100-$USED_MEM ))
+
+echo "Total free memory is $FREE_MEM%, $USED_MEM% used."
+
+if [ $Warning -lt $Critical ];
+FREE_MEM=$()
+then 
+	if [ $((USED_MEM)) -lt $((Warning)) ];
+	then
+		echo "Memory Usage is now at Normal State:$USED_MEM" | mail -s "$DATE Alert Memory Usage is at Normal State" $Email
+		exit 0
+
+	elif [ $USED_MEM -ge $Warning -a $USED_MEM -lt $Critical ];
+	then
+		echo "Memory Usage i now at Warning State:$USED_MEM" | mail -s "$DATE Alert Memory Usage is now at its Warning State" $Email
+		exit 1
+
+	elif [ $USED_MEM -ge $Critical ] ;
+	then
+		echo "Memory Usage is at its Critical State:$USED_MEM" 
+		(ps aux | sort -nk +4 | tail ) > /tmp/topprocess
+		(mail -s "DATE memory - check " $Email ) < /tmp/topprocess
+		exit 2
+	fi
+else
+	echo "The value of warning threshold you have entered must be less than the critical threshold"
+	exit 0
+fi
+

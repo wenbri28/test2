@@ -1,5 +1,5 @@
 class myclass {
-	package { 'vim-enhanced':
+	package { 'vim':
 	  ensure => present,
 	  before => Package['curl'],
 	}
